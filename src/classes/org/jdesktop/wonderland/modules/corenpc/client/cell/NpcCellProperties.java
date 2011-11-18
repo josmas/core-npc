@@ -35,7 +35,10 @@
  */
 package org.jdesktop.wonderland.modules.corenpc.client.cell;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -262,36 +265,37 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
     }//GEN-LAST:event_avatarCBActionPerformed
 
     private void jRadioIMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioIMIActionPerformed
+        String IMIURIContent = "wla://avatarbaseart/assets/configurations/content.txt";
         avatarCB.removeAllItems();
         thisAvatar = 0;
-        try
-            {
-            URL urell = AssetUtils.getAssetURL("wla://avatarbaseart/assets/configurations/content.txt");
+        try {
+            URL urell = AssetUtils.getAssetURL(IMIURIContent);
 
             java.net.URLConnection con = urell.openConnection();
             con.connect();
 
             java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(con.getInputStream()));
             String line;
-            for(; (line = in.readLine()) != null; )
-                {
+            for (; (line = in.readLine()) != null;) {
                 theAvatar[thisAvatar] = line;
                 thisAvatar++;
-                if(thisAvatar >= totalAvatars)
-                    {
+                if (thisAvatar >= totalAvatars) {
                     break;
-                    }
                 }
             }
-        catch (Exception ex)
-            {
-            ex.printStackTrace();
-            }
-      for(int i = 0; i < thisAvatar; i++)
-            {
+        } catch (MalformedURLException mue) {
+            LOGGER.log(Level.WARNING, "Malformed URI: {0} : {1}", new String[]{IMIURIContent, mue.getMessage()});
+            avatarCB.addItem("No Avatars found. Contact and administrator");
+            return;
+        } catch (IOException ioe) {
+            LOGGER.log(Level.WARNING, "Error Connecting to : {0}", ioe.getMessage());
+            avatarCB.addItem("No Avatars found. Contact and administrator");
+            return;
+        }
+        
+        for (int i = 0; i < thisAvatar; i++) {
             avatarCB.addItem(theAvatar[i]);
-            }
-        // TODO add your handling code here:
+        }
     }//GEN-LAST:event_jRadioIMIActionPerformed
 
     private void jRadioEvolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioEvolverActionPerformed
