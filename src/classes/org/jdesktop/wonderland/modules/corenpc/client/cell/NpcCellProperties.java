@@ -145,26 +145,24 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
         WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
         String userName = session.getUserID().getUsername();
 
-        if(jRadioIMI.isSelected())
-            {
+        if ( ((String) avatarCB.getSelectedItem()).equals(NO_AVATARS_FOUND) )
+            return;
+
+        if (jRadioIMI.isSelected()) {
             uri = "wla://avatarbaseart/assets/configurations/" + (String) avatarCB.getSelectedItem();
-            }
-        else if(jRadioEvolver.isSelected())
-            {
+        } else if (jRadioEvolver.isSelected()) {
             uri = "wlcontent://users/" + userName + "/avatars/multimesh-evolver/" + (String) avatarCB.getSelectedItem();
-            }
-        AvatarConfigComponentServerState accss = (AvatarConfigComponentServerState)
-                 editor.getCellServerState().getComponentServerState(AvatarConfigComponentServerState.class);
-        AvatarConfigInfo info = accss.getAvatarConfigInfo();
-        if(jRadioIMI.isSelected())
-            {
+        }
+
+        AvatarConfigComponentServerState accss =
+                (AvatarConfigComponentServerState) editor.getCellServerState().getComponentServerState(AvatarConfigComponentServerState.class);
+//        AvatarConfigInfo info = accss.getAvatarConfigInfo();
+        if (jRadioIMI.isSelected()) {
             accss.setAvatarConfigInfo(new AvatarConfigInfo(uri, "org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarLoaderFactory"));
-            }
-        else if(jRadioEvolver.isSelected())
-            {
+        } else if (jRadioEvolver.isSelected()) {
             accss.setAvatarConfigInfo(new AvatarConfigInfo(uri, "org.jdesktop.wonderland.modules.evolvermulti.client.evolver.MultimeshEvolverAvatarLoaderFactory"));
-            }
-        LOGGER.warning("Setting config info to " + accss.getAvatarConfigInfo().getAvatarConfigURL());
+        }
+        LOGGER.log(Level.WARNING, "Setting config info to {0}", accss.getAvatarConfigInfo().getAvatarConfigURL());
         editor.addToUpdateList(accss);
     }
 
@@ -203,6 +201,7 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
         jLabel2.setText("Avatar Type");
 
         buttonGroup1.add(jRadioIMI);
+        jRadioIMI.setSelected(true);
         jRadioIMI.setText("IMI Avatars");
         jRadioIMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -211,7 +210,6 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
         });
 
         buttonGroup1.add(jRadioEvolver);
-        jRadioEvolver.setSelected(true);
         jRadioEvolver.setText("Evolver Avatars");
         jRadioEvolver.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -224,16 +222,15 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 84, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(51, 51, 51)
                         .add(jRadioIMI)
                         .add(29, 29, 29)
                         .add(jRadioEvolver))
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(jLabel1)
                         .add(40, 40, 40)
                         .add(avatarCB, 0, 310, Short.MAX_VALUE)))
