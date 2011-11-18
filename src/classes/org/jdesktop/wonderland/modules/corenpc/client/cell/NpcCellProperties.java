@@ -40,6 +40,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
@@ -68,6 +69,7 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
     private final int totalAvatars = 100;
     private String[] theAvatar = new String[totalAvatars];
     private int thisAvatar = 0;
+    private static final String NO_AVATARS_FOUND = "No additional Avatars found";
 
     // The cell property editor panel, used to indicate clean/dirty state
     CellPropertiesEditor editor = null;
@@ -285,11 +287,11 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
             }
         } catch (MalformedURLException mue) {
             LOGGER.log(Level.WARNING, "Malformed URI: {0} : {1}", new String[]{IMIURIContent, mue.getMessage()});
-            avatarCB.addItem("No Avatars found. Contact and administrator");
+            disableAvatarCombo(avatarCB);
             return;
         } catch (IOException ioe) {
             LOGGER.log(Level.WARNING, "Error Connecting to : {0}", ioe.getMessage());
-            avatarCB.addItem("No Avatars found. Contact and administrator");
+            disableAvatarCombo(avatarCB);
             return;
         }
         
@@ -297,42 +299,55 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
             avatarCB.addItem(theAvatar[i]);
         }
     }//GEN-LAST:event_jRadioIMIActionPerformed
-
+    
     private void jRadioEvolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioEvolverActionPerformed
+        
+        String evolverURIContent = buildEvolverURIContentString();
+        
         avatarCB.removeAllItems();
         thisAvatar = 0;
-        try
-            {
-            WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-            String userName = session.getUserID().getUsername();
-            String thePath = session.getSessionManager().getServerURL();
-            URL urell = new URL(thePath + "/webdav/content/users/" + userName + "/avatars/multimesh-evolver/content.txt");
+        try {
+            URL urell = new URL(evolverURIContent);
 
             java.net.URLConnection con = urell.openConnection();
             con.connect();
 
             java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(con.getInputStream()));
             String line;
-            for(; (line = in.readLine()) != null; )
-                {
+            for (; (line = in.readLine()) != null;) {
                 theAvatar[thisAvatar] = line;
                 thisAvatar++;
-                if(thisAvatar >= totalAvatars)
-                    {
+                if (thisAvatar >= totalAvatars) {
                     break;
-                    }
                 }
             }
-        catch (Exception ex)
-            {
-            ex.printStackTrace();
-            }
+        } catch (MalformedURLException mue) {
+            LOGGER.log(Level.WARNING, "Malformed URI: {0} : {1}", new String[]{evolverURIContent, mue.getMessage()});
+            disableAvatarCombo(avatarCB);
+            return;
+        } catch (IOException ioe) {
+            LOGGER.log(Level.WARNING, "Error Connecting to : {0}", ioe.getMessage());
+            disableAvatarCombo(avatarCB);
+            return;
+        }
 
-        for(int i = 0; i < thisAvatar; i++)
-            {
+        for (int i = 0; i < thisAvatar; i++) {
             avatarCB.addItem(theAvatar[i]);
-            }
+        }
     }//GEN-LAST:event_jRadioEvolverActionPerformed
+
+    private void disableAvatarCombo(JComboBox avatarCB) {
+        avatarCB.addItem(NO_AVATARS_FOUND);
+        avatarCB.setEnabled(false);
+    }
+
+    private String buildEvolverURIContentString(){
+
+        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+        String userName = session.getUserID().getUsername();
+        String serverURL = session.getSessionManager().getServerURL();
+        return serverURL + "/webdav/content/users/" + userName + "/avatars/multimesh-evolver/content.txt";
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox avatarCB;
