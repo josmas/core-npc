@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="core-npc" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.npc}"/>
+
+
+    <!-- import properties for this module -->
+    <property file="${current.dir}/my.module.properties"/>
+
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>    
+    <property name="module.src" value="${module.plugin.src}"/>
+    <property name="module.jarname" value="${module.name}"/>
+ 
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+       
+    <!-- npc is dependent on avatarbase -->
+    <pathconvert property="module-client.classpath">
+        <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
+        <path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
+        <path location="${wonderland.dir}/../wonderland-modules/unstable/evolver-avatar-multimesh/build/client/evolver-avatar-multimesh-client.jar"/>
+    </pathconvert>
+    <pathconvert property="module-common.classpath">
+        <path location="${modules.dir}/world/avatarbase/build/lib/avatarbase-common.jar"/>
+    </pathconvert>
+    <pathconvert property="module-server.classpath">
+        <path location="${modules.dir}/world/avatarbase/build/server/avatarbase-server.jar"/>
+    </pathconvert>
+
+    <target name="build" depends="-module-init, -module-compile-common, 
+                                                -module-compile-server,
+                                                -module-compile-client"/>
+    
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+
+        <module name="${module.name}" majorVersion="0" minorVersion="1" jarfile="${module.dist.dir}/${module.name}.jar" moduleDescription="${module.description}" builddir="${build.dir}">
+            <requires name="avatarbase" majorversion="0" minorversion="5" miniVersion="1"/>
+
+            <client>
+                <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/cell/resources/**/*.png"/>
+                    </fileset>
+                </clientjar> 
+            </client>
+
+            <server>
+                <serverjar name="${module.name}-server" basedir="${build.classes.dir}">
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>
+                </serverjar>
+            </server>
+        </module>
+    </target>                                  
+                                           
+    <target name="deploy" depends="dist, -module-deploy"/>
+    <target name="clean" depends="-module-clean"/>
+</project>
