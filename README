@@ -1,0 +1,12 @@
+--------------
+-- core NPC --
+--------------
+
+This module is an attempt to create an NPC module that has no dependencies on
+any of the Wonderland Scripting engines.
+
+It is a copy of generic-npc which has been stripped off the dependencies to
+EZScript. Other clean up work and added functionality will also be inculded
+(soon-ish).
+
+Jos -- November 2011
