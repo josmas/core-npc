@@ -15,7 +15,6 @@
  * subject to the "Classpath" exception as provided by the Open Wonderland
  * Foundation in the License file that accompanied this code.
  */
-
 /**
  * Project Wonderland
  *
@@ -43,16 +42,13 @@ import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.shape.Box;
 import imi.character.avatar.Avatar;
-import imi.character.avatar.AvatarContext;
 import imi.character.avatar.AvatarContext.TriggerNames;
 import imi.character.behavior.CharacterBehaviorManager;
-import imi.character.behavior.GoSit;
 import imi.character.behavior.GoTo;
 import imi.character.statemachine.GameContext;
 import imi.character.statemachine.GameContextListener;
 import imi.character.statemachine.GameState;
 import imi.character.statemachine.corestates.CycleActionState;
-import imi.objects.AvatarChair;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
@@ -91,7 +87,6 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTa
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.ImiPickGeometry.PickBox;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.PickGeometry;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
-import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentServerState;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
 import org.jdesktop.wonderland.modules.evolvermulti.client.evolver.MultimeshEvolverAvatarLoaderFactory;
@@ -103,32 +98,26 @@ import org.jdesktop.wonderland.modules.evolvermulti.client.evolver.MultimeshEvol
  */
 public class NpcCell extends Cell
         implements CellStatusChangeListener, AvatarChangedListener,
-                   ContextMenuActionListener
-{
-    private AvatarImiJME renderer;
+        ContextMenuActionListener {
 
+    private AvatarImiJME renderer;
     @UsesCellComponent
     private MovableNpcComponent movableNpc;
-
     @UsesCellComponent
     private ContextMenuComponent contextMenu;
-
     private final ContextMenuFactorySPI menuFactory;
-
-    private String[] nameList = null;
     public static final int IMI_AVATAR = 0;
     public static final int EVOLVER_AVATAR = 1;
-
-    private NpcChair ac = null;
 
     public NpcCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
 
         menuFactory = new ContextMenuFactorySPI() {
+            
             public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-                return new ContextMenuItem[] {
-                    new SimpleContextMenuItem("Controls...", NpcCell.this),
-                    //new SimpleContextMenuItem("Pick Geometry...", NpcCell.this)
+                return new ContextMenuItem[]{
+                            new SimpleContextMenuItem("Controls...", NpcCell.this)
+                            //new SimpleContextMenuItem("Pick Geometry...", NpcCell.this)
                 };
             }
         };
@@ -139,9 +128,10 @@ public class NpcCell extends Cell
             NpcControllerFrame frame = new NpcControllerFrame(getControls());
             frame.pack();
             frame.setVisible(true);
+            //TODO why is pick geometry not an option anymore? if not an option delete this
         } else if (event.getContextMenuItem().getLabel().equals("Pick Geometry...")) {
             PickGeometry pg = renderer.getPickGeometry();
-            if (pg instanceof  ImiPickGeometry) {
+            if (pg instanceof ImiPickGeometry) {
                 ImiPickGeometry ipg = (ImiPickGeometry) pg;
 
                 for (Spatial s : ipg.getChildren()) {
@@ -156,14 +146,12 @@ public class NpcCell extends Cell
     @Override
     protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
-        
+
         // If the Cell is being made active and increasing, then add the menu
         // item. Also add the proximity listener
         if (status == CellStatus.ACTIVE && increasing == true) {
             contextMenu.addContextMenuFactory(menuFactory);
             addStatusChangeListener(this);
-
-
             return;
         }
 
@@ -176,174 +164,57 @@ public class NpcCell extends Cell
         }
     }
 
-
-
-
-    public void avatarSelectAvatar(String avatar, int imiOrEvolver)
-        {
+    public void avatarSelectAvatar(String avatar, int imiOrEvolver) {
         String uri = null;
         String urlString = null;
 
         ChannelComponent cc = NpcCell.this.getComponent(ChannelComponent.class);
 
-        switch(imiOrEvolver)
-            {
-            case IMI_AVATAR:
-                {
+        switch (imiOrEvolver) {
+            case IMI_AVATAR: {
                 uri = "wla://avatarbaseart/assets/configurations/" + avatar;
-                try 
-                    {
+                try {
                     urlString = AssetUtils.getAssetURL(uri, NpcCell.this).toExternalForm();
-                    } 
-                catch (java.net.MalformedURLException excp) 
-                    {
+                } catch (java.net.MalformedURLException excp) {
                     logger.log(Level.WARNING, "Unable to form URL from " + uri, excp);
                     return;
-                    }
+                }
 
-        // Form up a message and send
+                // Form up a message and send
                 String className = ImiAvatarLoaderFactory.class.getName();
                 AvatarConfigInfo info = new AvatarConfigInfo(urlString, className);
                 cc.send(AvatarConfigMessage.newRequestMessage(info));
                 break;
-                }
-            case EVOLVER_AVATAR:
-                {
+            }
+            case EVOLVER_AVATAR: {
                 WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
                 String userName = session.getUserID().getUsername();
 
                 uri = "wlcontent://users/" + userName + "/avatars/multimesh-evolver/" + avatar;
                 System.out.println("In apply Evolver selected - URI = " + uri);
-                try
-                    {
+                try {
                     urlString = AssetUtils.getAssetURL(uri, NpcCell.this).toExternalForm();
-                    }
-                catch (java.net.MalformedURLException excp)
-                    {
+                } catch (java.net.MalformedURLException excp) {
                     logger.log(Level.WARNING, "Unable to form URL from " + uri, excp);
                     return;
-                    }
-                
+                }
+
                 String className = MultimeshEvolverAvatarLoaderFactory.class.getName();
                 AvatarConfigInfo info = new AvatarConfigInfo(urlString, className);
                 cc.send(AvatarConfigMessage.newRequestMessage(info));
                 break;
-                }
             }
+        }
         // From the partial URI, add the module prefix
-        }
+    }
 
-    public void avatarStartForward()
-        {
-        renderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Forward);
-        }
-
-
-
-    public void avatarRunAnimation(String animation)
-        {
-        renderer.getAvatarCharacter().playAnimation(animation);
-        }
-
-
-
-    public void avatarStopAnimation()
-        {
-        renderer.getAvatarCharacter().stop();
-        }
-
-
-
-    public String[] avatarDumpAnimations()
-        {
-        int     i = 0;
-        nameList = new String[50];
-
-        for(String anim : renderer.getAvatarCharacter().getAnimationNames())
-            {
-                System.out.println("Avatar animation = " + anim);
-                nameList[i] = anim;
-                i++;
-            }
-        System.out.println("in avatarDumpAnimations - list = " + nameList);
-        return nameList;
-        }
-
-
-
-    public void avatarStopForward()
-        {
-        renderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Forward);
-        }
-
-
-
-    public void avatarStartBack()
-        {
-        renderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Back);
-        }
-
-
-
-    public void avatarStopBack()
-        {
-        renderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Back);
-        }
-
- 
-
-    public void avatarStartLeft()
-        {
-        renderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Left);
-        }
-
-
-
-    public void avatarStopLeft()
-        {
-        renderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Left);
-        }
-
-
-
-    public void avatarStartRight()
-        {
-        renderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Right);
-        }
-
-
-
-    public void avatarStopRight()
-        {
-        renderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Right);
-        }
-
-
-
-
-
-    public void makeChair(float x, float y, float z, float xx, float yy, float zz)
-        {
-        ac = new NpcChair(new Vector3f(x, y, z), new Vector3f(xx, yy, zz));
-//        ac = new NpcChair(new Vector3f(5.0f, 0.0f, 5.0f), new Vector3f(1.0f, 0.0f, 1.0f), "wlcontent://users/morris/chairs/cube1.kmz");
-//        ac = new NpcChair();
-        }
-
-
-
-    public void goSit()
-        {
-        if(ac != null)
-            {
-            GameContext context = renderer.getAvatarCharacter().getContext();
-            CharacterBehaviorManager helm = context.getBehaviorManager();
-            helm.clearTasks();
-            helm.setEnable(true);
-            helm.addTaskToTop(new GoSit(ac, (AvatarContext) context));
-            }
-        }
-
-
+    protected void move(float x, float y, float z) {
+        GameContext context = renderer.getAvatarCharacter().getContext();
+        CharacterBehaviorManager helm = context.getBehaviorManager();
+        helm.clearTasks();
+        helm.setEnable(true);
+        helm.addTaskToTop(new GoTo(new Vector3f(x, y, z), context));
+    }
 
     public void cellStatusChanged(Cell cell, CellStatus status) {
         if (status == CellStatus.ACTIVE) {
@@ -358,6 +229,7 @@ public class NpcCell extends Cell
 
     public void avatarChanged(Avatar avatar) {
         SceneWorker.addWorker(new WorkCommit() {
+
             public void commit() {
                 attachEditorGeometry();
                 attachCellLocationUpdater();
@@ -394,6 +266,7 @@ public class NpcCell extends Cell
 
     public NpcControls getControls() {
         return new NpcControls() {
+
             public void triggerActionStart(TriggerNames trigger) {
                 renderer.getAvatarCharacter().triggerActionStart(trigger);
             }
@@ -416,28 +289,20 @@ public class NpcCell extends Cell
         };
     }
 
-    protected void move(float x, float y, float z) {
-        GameContext context = renderer.getAvatarCharacter().getContext();
-        CharacterBehaviorManager helm = context.getBehaviorManager();
-        helm.clearTasks();
-        helm.setEnable(true);
-        helm.addTaskToTop(new GoTo(new Vector3f(x, y, z), context));
-    }
-
     private void attachEditorGeometry() {
         Entity e = renderer.getEntity();
         if (e.getComponent(RenderComponent.class) == null) {
             Box b = new Box("Avatar editor", Vector3f.ZERO, 0.4f, 0.95f, 0.1f);
             b.setLocalTranslation(new Vector3f(0f, 1f, 0f));
             b.setModelBound(new BoundingBox(Vector3f.ZERO, b.getXExtent(),
-                                            b.getYExtent(), b.getZExtent()));
+                    b.getYExtent(), b.getZExtent()));
             b.updateGeometricState(0, true);
             b.setCullHint(Spatial.CullHint.Always);
 
             Node n = new Node("Avatar editor");
             n.attachChild(b);
 
-            RenderManager rm =  ClientContextJME.getWorldManager().getRenderManager();
+            RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
             RenderComponent rc = rm.createRenderComponent(n);
             rc.setAttachPoint(renderer.getAvatarCharacter().getJScene().getExternalKidsRoot());
 
@@ -446,43 +311,40 @@ public class NpcCell extends Cell
         }
     }
 
-    private void attachNpcName(String name)
-        {
+    private void attachNpcName(String name) {
         renderer.getAvatarCharacter();
         Node extKids = renderer.getAvatarCharacter().getJScene().getExternalKidsRoot();
         extKids.attachChild(new NameTagNode(name, 2, false, false, false));
 
-        }
+    }
 
     private void attachCellLocationUpdater() {
         Node extKids = renderer.getAvatarCharacter().getJScene().getExternalKidsRoot();
         extKids.addGeometricUpdateListener(new GeometricUpdateListener() {
+
             public void geometricDataChanged(Spatial sptl) {
                 CellTransform xform = new CellTransform(sptl.getWorldRotation(),
-                                                        sptl.getWorldTranslation(),
-                                                        sptl.getWorldScale().x);
+                        sptl.getWorldTranslation(),
+                        sptl.getWorldScale().x);
 
                 movableNpc.geometryChanged(xform);
             }
         });
     }
 
-    private void attachAnimationListener()
-        {
+    private void attachAnimationListener() {
         final WlAvatarCharacter character = renderer.getAvatarCharacter();
-        character.getContext().addGameContextListener(new GameContextListener()
-            {
-            public void trigger(boolean pressed, int trigger, Vector3f translation, Quaternion rotation)
-                {
+        character.getContext().addGameContextListener(new GameContextListener() {
+
+            public void trigger(boolean pressed, int trigger, Vector3f translation, Quaternion rotation) {
                 GameState state = character.getContext().getCurrentState();
-                String animationName=null;
-                if (state instanceof CycleActionState)
-                    {
+                String animationName = null;
+                if (state instanceof CycleActionState) {
                     animationName = character.getContext().getState(CycleActionState.class).getAnimationName();
-                    }
+                }
 
                 movableNpc.localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, animationName, null);
-                }
-            });
-        }
+            }
+        });
+    }
 }
