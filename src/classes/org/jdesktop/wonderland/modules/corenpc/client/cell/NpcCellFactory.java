@@ -75,7 +75,7 @@ public class NpcCellFactory implements CellFactorySPI {
     }
 
     public String getDisplayName() {
-        return "NPC";
+        return "NPC-core";
     }
 
     public Image getPreviewImage() {

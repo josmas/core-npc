@@ -87,7 +87,7 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
      * @inheritDoc()
      */
     public String getDisplayName() {
-        return "NPC";
+        return "NPC-core";
     }
 
     /**
